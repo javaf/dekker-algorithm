@@ -1,73 +1,71 @@
-import java.util.concurrent.*;
-
-// Two processes use a respective variable to
-// indicate that they want to enter a critical
-// section. However using just that could lead to
-// a deadlock. So they use a tie-breaker "turn" to
-// indicate whose turn it is to wait. So, each
-// process says it wants to enter CS but also that
-// it is its turn to wait. In the end, a process
-// only waits if the other process wants to enter
-// CS as well as it is its own turn to wait. This
-// tie-breaker prevents deadlock.
+// Dekker's algorithm is the first known correct solution
+// to the mutual exclusion problem in concurrent
+// programming. The solution is attributed to Dutch
+// mathematician Th. J. Dekker by Edsger W. Dijkstra.
+// It allows two threads to share a single-use resource
+// without conflict, using only shared memory for
+// communication.
 
 class Main {
-  static int c1, c2;
-  static int turn;
+  static boolean[] flag = {false, false};
+  static int turn = 0;
+  static int N = 4;
+  // flag: ith process wants to enter CS?
+  // turn: whose turn to enter CS
+  // N: number of loops
 
-  // Process 1:
-  // 1. I want to enter CS (c1=1)
-  // 2. Its my turn to wait (turn=1)
-  // 3. I wait if you want too and my wait turn
-  // 4. I enter CS (sleep random)
-  // 5. I dont want to enter CS (c1=0)
-  static void process1() {
-    new Thread(() -> {
-      try {
-      while(true) {
-        c1 = 1;
-        turn = 1;
-        log("1: waiting");
-        while(c2==1 && turn==1) Thread.sleep(10);
-        log("1: enter critical section");
-        Thread.sleep((long)(Math.random()*1000));
-        log("1: exits critical section");
-        c1 = 0;
+
+  // 1. I want to enter CS.
+  // 2. If you want CS too  ...
+  // 3a. If its my turn, retry 2.
+  // 4a. If its your turn, i dont want to enter.
+  // 4b. I wait for you turn to complete.
+  // 4c. I now want to enter, retry 2.
+  // 5. I enter CS (sleep).
+  // 6. Its your turn now.
+  // 7. I dont want CS.
+  static Thread process(int i) {
+    return new Thread(() -> {
+      int j = 1 - i;
+      for (int n=0; n<N; n++) {
+        log(i+": want CS"); // LOCK
+        flag[i] = true;   // 1
+        while (flag[j]) { // 2
+          if (turn == i) { Thread.yield(); continue; } // 3a
+          flag[i] = false;      // 4a
+          while (turn == j) Thread.yield(); // 4b
+          flag[i] = true; // 4c
+        }
+        
+        log(i+": in CS"+n);
+        sleep(1000 * Math.random()); // 5
+
+        log(i+": done CS"); // UNLOCK
+        turn = j;        // 6
+        flag[i] = false; // 7
       }
-      }
-      catch(InterruptedException e) {}
-    }).start();
+    });
   }
 
-  // Process 2:
-  // 1. I want to enter CS (c2=1)
-  // 2. Its my turn to wait (turn=2)
-  // 3. I wait if you want too and my wait turn
-  // 4. I enter CS (sleep random)
-  // 5. I dont want to enter CS (c2=0)
-  static void process2() {
-    new Thread(() -> {
-      try {
-      while(true) {
-        c2 = 1;
-        turn = 2;
-        log("2: waiting");
-        while(c1==1 && turn==2) Thread.sleep(10);
-        log("2: enter critical section");
-        Thread.sleep((long)(Math.random()*1000));
-        log("2: exits critical section");
-        c2 = 0;
-      }
-      }
-      catch(InterruptedException e) {}
-    }).start();
-  }
 
-  // 1. Both processes started
   public static void main(String[] args) {
-    process1();
-    process2();
+    try {
+    log("Starting 2 processes (threads) ...");
+    Thread p0 = process(0);
+    Thread p1 = process(1);
+    p0.start();
+    p1.start();
+    p0.join();
+    p1.join();
+    }
+    catch (InterruptedException e) {}
   }
+
+  static void sleep(double t) {
+    try { Thread.sleep((long)t); }
+    catch (InterruptedException e) {}
+  }
+
   static void log(String x) {
     System.out.println(x);
   }
