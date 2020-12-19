@@ -9,9 +9,8 @@ without conflict, *using only shared memory for*
 Java already provides a `ReentrantLock`. This is for
 educational purposes only.
 
-> **Course**: [Concurrent Data Structures], Monsoon 2020<br>
+> **Course**: [Concurrent Data Structures], Monsoon 2020\
 > **Taught by**: Prof. Govindarajulu Regeti
-<br>
 
 [Concurrent Data Structures]: https://github.com/iiithf/concurrent-data-structures
 
