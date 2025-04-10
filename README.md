@@ -70,3 +70,4 @@ intrigano](https://www.youtube.com/watch?v=dPa9414uyYE)
 - [Dekker's algorithm](https://en.wikipedia.org/wiki/Dekker%27s_algorithm)
 
 ![](https://ga-beacon.deno.dev/G-G1E8HNDZYY:v51jklKGTLmC3LAZ4rJbIQ/github.com/javaf/dekker-algorithm)
+![](https://ga-beacon.deno.dev/G-G1E8HNDZYY:v51jklKGTLmC3LAZ4rJbIQ/github.com/moocf/dekker-algorithm.java)
